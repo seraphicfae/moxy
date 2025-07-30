@@ -8,4 +8,4 @@ npm init -y
 
 npm install discord.js axios dotenv node-fetch
 
-node index.js
+node loadCommands.js && node index.js
