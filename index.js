@@ -1,13 +1,13 @@
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 const { loadCommands, loadEvents } = require("./utils/loaders");
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
   ],
 });
 

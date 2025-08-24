@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   name: "clear",
@@ -32,14 +36,10 @@ module.exports = {
       return message.reply("Enter a number between 1 and 99.");
     }
 
-    const deleted = await message.channel
-      .bulkDelete(amount, true)
-      .catch(() => null);
-    const count = deleted ? deleted.size : 0;
-    const reply = await message.channel.send(
-      `Cleared ${count} message${count !== 1 ? "s" : ""}.`,
-    );
-    setTimeout(() => reply.delete().catch(() => {}), 5000);
+    await safeBulkDelete(message.channel, amount, async (msg) => {
+      const reply = await message.channel.send(msg);
+      setTimeout(() => reply.delete().catch(() => {}), 5000);
+    });
   },
 
   // slash cmd
@@ -47,23 +47,41 @@ module.exports = {
     if (
       !interaction.memberPermissions.has(PermissionFlagsBits.ManageMessages)
     ) {
-      return interaction.reply(
-        "You need the Manage Messages permission to use this command.",
-      );
+      return interaction.reply({
+        content: "You need the Manage Messages permission to use this command.",
+        ephemeral: true,
+      });
     }
 
     const amount = interaction.options.getInteger("amount");
 
     if (!amount || amount < 1 || amount > 99) {
-      return interaction.reply("Enter a number between 1 and 99.");
+      return interaction.reply({
+        content: "Enter a number between 1 and 99.",
+        ephemeral: true,
+      });
     }
 
-    const deleted = await interaction.channel
-      .bulkDelete(amount, true)
-      .catch(() => null);
-    const count = deleted ? deleted.size : 0;
-    await interaction.reply(
-      `Cleared ${count} message${count !== 1 ? "s" : ""}.`,
-    );
+    await safeBulkDelete(interaction.channel, amount, async (msg) => {
+      await interaction.reply({ content: msg, flags: MessageFlags.Ephemeral });
+    });
   },
 };
+
+// Disocrd API such good!
+async function safeBulkDelete(channel, amount, sendFeedback) {
+  try {
+    const deleted = await channel.bulkDelete(amount, true);
+    const deletedCount = deleted.size;
+
+    let message = `Deleted ${deletedCount} messages.`;
+    if (deletedCount < amount) {
+      message += ` Some messages weren't deleted: older than 14 days.`;
+    }
+
+    await sendFeedback(message);
+  } catch (err) {
+    console.error("Bulk delete failed:", err);
+    await sendFeedback("Failed to delete messages due to an unexpected error.");
+  }
+}

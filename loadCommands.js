@@ -3,7 +3,7 @@ const { Routes } = require("discord-api-types/v10");
 const fs = require("fs");
 const path = require("path");
 const { BOT_ID } = require("./utils/config.json");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const commands = [];
 const foldersPath = path.join(__dirname, "commands");
