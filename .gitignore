@@ -1,4 +1,8 @@
-node_modules
-package-lock.json
-package.json
+# Misc
+utils/config.json
+
+# dependencies
+node_modules/
+
+# environment variables
 .env
