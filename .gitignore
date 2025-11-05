@@ -3,6 +3,8 @@ utils/config.json
 
 # dependencies
 node_modules/
+package.json
+package-lock.json
 
 # environment variables
 .env
